@@ -36,7 +36,7 @@ class ConfController {
     this._storage = storage;
     this._walletConfPatt = /^wallet-confs\/(.+\.conf$)/;
     this._xbridgeConfPatt = /^xbridge-confs\/(.+\.conf$)/;
-    this._manifestPath = /manifest-latest.json;
+    this._manifestPath = manifest-latest.json;
   }
 
   async update() {
