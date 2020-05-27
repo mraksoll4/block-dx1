@@ -27,7 +27,7 @@ Errors['dxLoadXBridgeConf'] = {};
 Errors['dxGetLockedUtxos'] = {};
 
 // Full error code list found here:
-// https://github.com/BlocknetDX/BlockDX/blob/master/src/xbridge/util/xbridgeerror.h
+// https://github.com/mraksoll4/BlockDX/blob/master/src/xbridge/util/xbridgeerror.h
 
 // Messages: Errors['dxGetOrderHistory'][1025] = 'Message here';
 
