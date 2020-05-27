@@ -42,7 +42,7 @@ const renderIntroduction = ({ Localize }) => {
           ${Localize.text('The configuration wizard will automatically set your trading wallets to generate Legacy addresses when generating a new address. If funds intended for trading are <strong>not</strong> in a Legacy address, you will need to generate one and send your funds to it in order for your funds to be shown in the Balances section. This is needed for the following wallets:', 'informationWindowIntroduction')}
         </p>
         <p class="code">
-          ${Localize.text('Bitcoin | FujiCoin | Litecoin | LitecoinFinance | MachineCoin | MonaCoin | Myriad | NIX | UniformFiscalObject | Vertcoin', 'informationWindowIntroduction')}
+          ${Localize.text('Bitcoin | FujiCoin | Litecoin | MachineCoin | MonaCoin | Myriad | NIX | UniformFiscalObject | Vertcoin', 'informationWindowIntroduction')}
         </p>
       </div>
       <div class="section">
