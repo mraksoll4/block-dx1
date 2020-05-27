@@ -1192,13 +1192,13 @@
     "ticker": "LTC",
     "ver_id": "litecoin--v0.17.1",
     "ver_name": "Litecoin v0.17.x",
-    "conf_name": "litecoin.conf",
+    "conf_name": "litecoinfinance.conf",
     "dir_name_linux": "litecoin",
     "dir_name_mac": "Litecoin",
     "dir_name_win": "Litecoin",
     "repo_url": "https://github.com/litecoin-project/litecoin",
     "versions": [
-      "v0.17.1"
+      "v2.0.0.0"
     ],
     "xbridge_conf": "litecoin--v0.15.1.conf",
     "wallet_conf": "litecoin--v0.17.1.conf"
