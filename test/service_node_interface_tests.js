@@ -4,7 +4,7 @@ const ServiceNodeInterface = require('../src-back/service-node-interface');
 
 describe('Service Node Interface', () => {
 
-  const sn = new ServiceNodeInterface('myuser', 'mypassword', 'http://localhost:41414');
+  const sn = new ServiceNodeInterface('myuser', 'mypassword', 'http://localhost:41421');
 
   it('Should be a constructor', () => {
     ServiceNodeInterface.should.be.a.Function();

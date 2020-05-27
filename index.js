@@ -1853,7 +1853,7 @@ ipcMain.on('getZoomFactor', (e) => e.returnValue = storage.getItem('zoomFactor')
     }
 
     if(!port) {
-      port = '41414';
+      port = '41421';
       storage.setItem('port', port);
     }
 

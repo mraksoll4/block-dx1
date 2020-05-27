@@ -339,7 +339,7 @@ class ServiceNodeInterface {
    * Constructs a service node interface instance.
    * @param {string} user - service node user
    * @param {string} password - service node password
-   * @param {string} endpoint - location of service node e.g. http://localhost:41414
+   * @param {string} endpoint - location of service node e.g. http://localhost:41421
    */
   constructor(user, password, endpoint) {
     this._user = user;

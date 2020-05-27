@@ -1217,7 +1217,7 @@
       "v2.0.0.0"
     ],
     "xbridge_conf": "litecoinfinance--v2.0.0.0.conf",
-    "wallet_conf": "litecoinfinance--v2.0.0.0..conf"
+    "wallet_conf": "litecoinfinance--v2.0.0.0.conf"
   },
   {
     "blockchain": "LogisCoin",
