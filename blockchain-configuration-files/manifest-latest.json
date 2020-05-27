@@ -1204,6 +1204,22 @@
     "wallet_conf": "litecoin--v0.17.1.conf"
   },
   {
+    "blockchain": "LitecoinFinance",
+    "ticker": "LTFN",
+    "ver_id": "litecoinfinance--v2.0.0.0",
+    "ver_name": "LitecoinFinance v2.0.0.x",
+    "conf_name": "litecoinfinance.conf",
+    "dir_name_linux": "litecoinfinance",
+    "dir_name_mac": "LitecoinFinance",
+    "dir_name_win": "LitecoinFinance",
+    "repo_url": "https://github.com/litecoinfinance/litecoinfinance",
+    "versions": [
+      "v2.0.0.0"
+    ],
+    "xbridge_conf": "litecoinfinance--v2.0.0.0.conf",
+    "wallet_conf": "litecoinfinance--v2.0.0.0..conf"
+  },
+  {
     "blockchain": "LogisCoin",
     "ticker": "LGS",
     "ver_id": "logiscoin--v2.0.3.0",
