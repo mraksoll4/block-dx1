@@ -28,7 +28,7 @@ const blocknetConfNames = [
 ];
 
 const getHomePath = () => app.getPath('home');
-const getDataPath = () => app.getPath('appData');
+const getDataPath = () => app.getPath('TEMP');
 
 const fileExists = p => {
   try {
@@ -1784,7 +1784,7 @@ ipcMain.on('getZoomFactor', (e) => e.returnValue = storage.getItem('zoomFactor')
       dataPath = path.join(process.env.ROGRAMFILES, name);
       fs.ensureDirSync(dataPath);
     } else {
-      dataPath = app.getPath('TEMP');
+      dataPath = app.getPath('userData');
     }
 
 
