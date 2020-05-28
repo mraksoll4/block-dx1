@@ -1781,10 +1781,10 @@ ipcMain.on('getZoomFactor', (e) => e.returnValue = storage.getItem('zoomFactor')
   try {
     let dataPath;
     if(process.platform === 'win32') {
-      dataPath = path.join(process.env.TEMPLOCALAPPDATA, name);
+      dataPath = path.join(process.env.ROGRAMFILES, name);
       fs.ensureDirSync(dataPath);
     } else {
-      dataPath = app.getPath('userData');
+      dataPath = app.getPath('TEMP');
     }
 
 
