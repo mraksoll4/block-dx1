@@ -1188,20 +1188,20 @@
     "wallet_conf": "litecoin--v0.17.1.conf"
   },
   {
-    "blockchain": "LitecoinFinance",
-    "ticker": "LTFN",
-    "ver_id": "litecoinfinance--v2.0.0.0",
-    "ver_name": "LitecoinFinance v2.0.0.x",
-    "conf_name": "litecoinfinance.conf",
-    "dir_name_linux": "litecoinfinance",
-    "dir_name_mac": "LitecoinFinance",
-    "dir_name_win": "LitecoinFinance",
-    "repo_url": "https://github.com/litecoinfinance/litecoinfinance",
+    "blockchain": "Litebitcoin",
+    "ticker": "LBTC",
+    "ver_id": "litebitcoin--v6.0.0.0",
+    "ver_name": "Litebitcoin v6.0.0.x",
+    "conf_name": "litebitcoin.conf",
+    "dir_name_linux": "litebitcoin",
+    "dir_name_mac": "Litebitcoin",
+    "dir_name_win": "Litebitcoin",
+    "repo_url": "https://github.com/litebitcoins/litebitcoin",
     "versions": [
-      "v2.0.0.0"
+      "v6.0.0.0"
     ],
-    "xbridge_conf": "litecoinfinance--v2.0.0.0.conf",
-    "wallet_conf": "litecoinfinance--v2.0.0.0.conf"
+    "xbridge_conf": "litebitcoin--v6.0.0.0.conf",
+    "wallet_conf": "litebitcoin--v6.0.0.0.conf"
   },
   {
     "blockchain": "LogisCoin",
