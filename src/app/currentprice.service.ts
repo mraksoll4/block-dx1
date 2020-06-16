@@ -104,7 +104,6 @@ export class CurrentpriceService {
 
         this.orderHistoryBy15Minutes.next(preppedData);
       });
-      window.electron.ipcRenderer.send('getOrderHistoryBy15Minutes');
     }
     return this.orderHistoryBy15Minutes;
   }

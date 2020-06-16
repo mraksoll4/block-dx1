@@ -94,7 +94,7 @@ export class OrderbookService {
         }, 0);
 
         for(const ask of asks) {
-          // set the ask size divided by total ask size
+          // ask.push((parseFloat(ask[1]) / totalAskSize) * 100);
           ask.splice(-1, 0, String(math
             .chain(bignumber(ask[1]))
             .divide(bignumber(totalAskSize))
@@ -102,9 +102,7 @@ export class OrderbookService {
             .done()
             .toNumber()
           ));
-          // set the type
           ask.splice(-1, 0, 'ask');
-          // [ price, size, order ID, size / total size, type, total ]
         }
 
         const bids = p.bids;
@@ -113,7 +111,7 @@ export class OrderbookService {
         }, 0);
 
         for(const bid of bids) {
-          // set the bid size divided by total bid size
+          // bid.push((parseFloat(bid[1]) / totalBidSize) * 100);
           bid.splice(-1, 0, String(math
             .chain(bignumber(bid[1]))
             .divide(bignumber(totalBidSize))
@@ -121,10 +119,10 @@ export class OrderbookService {
             .done()
             .toNumber()
           ));
-          // set the type
           bid.splice(-1, 0, 'bid');
-          // [ price, size, order ID, size / total size, type, total ]
         }
+
+        // console.log(p);
 
         this.orderbookObservable.next(p);
 

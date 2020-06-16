@@ -29,15 +29,15 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
   public currentPrice: Currentprice;
   public midMarketPrice = '';
   public currentPriceCSSPercentage = 0;
-  public rightChart: any;
-  public leftChart: any;
+  public topChart: any;
+  public bottomChart: any;
   public orderbook:any[] = [];
 
-  @ViewChild('rightChartContainer')
-  public rightChartContainer: ElementRef;
+  @ViewChild('topChartContainer')
+  public topChartContainer: ElementRef;
 
-  @ViewChild('leftChartContainer')
-  public leftChartContainer: ElementRef;
+  @ViewChild('bottomChartContainer')
+  public bottomChartContainer: ElementRef;
 
   private subscriptions = [];
 
@@ -72,22 +72,16 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngAfterViewInit() {
-
-    this.makeChart();
-
     const { zone } = this;
 
     this.subscriptions.push(this.appService.marketPairChanges.subscribe((symbols) => {
-      zone.run(() => {
-        this.symbols = symbols;
-      });
+      this.symbols = symbols;
     }));
     this.subscriptions.push(this.currentpriceService.currentprice.subscribe((cp) => {
       zone.run(() => {
         this.currentPrice = cp;
       });
     }));
-    window.electron.ipcRenderer.send('getCurrentPrice'); // force the current price service to send the data
     this.subscriptions.push(this.orderbookService.getOrderbook()
       .subscribe(orderbook => {
 
@@ -100,9 +94,9 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
 
           // Convert to data points
           for(let i = 0; i < list.length; i++) {
-            const value = Number(list[i][0]); // price
-            const volume = Number(list[i][1]); // size
-            const total = Number(list[i][5]); // total
+            const value = Number(list[i][0]);
+            const volume = Number(list[i][1]);
+            const total = Number(list[i][5]);
             list[i] = {
               value,
               volume,
@@ -154,15 +148,9 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
             obj[totalVolumeKey] = totalVolumeMap.get(obj.value);
           }
 
-          // group by value
-          const valueMap = new Map();
-          for(const obj of res) {
-            valueMap.set(obj.value, obj);
-          }
-          const filteredByValueArr = [...valueMap.values()];
-          if(desc) filteredByValueArr.reverse();
+          if(desc) res.reverse();
 
-          return filteredByValueArr;
+          return res;
 
         };
 
@@ -182,6 +170,7 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
         })
     );
 
+    this.makeChart();
   }
 
   ngOnChanges() {
@@ -192,10 +181,10 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.subscriptions
       .forEach(subscription => subscription.unsubscribe());
 
-    if (this.rightChart)
-      this.rightChart.clear();
-    if (this.leftChart)
-      this.leftChart.clear();
+    if (this.topChart)
+      this.topChart.clear();
+    if (this.bottomChart)
+      this.bottomChart.clear();
   }
 
   updateDepthChart() {
@@ -207,11 +196,11 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
         valueStr: String(d.value).replace('.', decimalSeparator)
       }));
 
-    const rightChartData = data.filter(obj => obj.askstotalvolume ? true : false);
-    const leftChartData = data.filter(obj => obj.bidstotalvolume ? true : false);
+    const topChartData = data.filter(obj => obj.askstotalvolume ? true : false);
+    const bottomChartData = data.filter(obj => obj.bidstotalvolume ? true : false);
 
-    const topTotalVolume = rightChartData.length > 0 ? rightChartData[0].askstotalvolume : 0;
-    const bottomTotalVolume = leftChartData.length > 0 ? leftChartData[leftChartData.length - 1].bidstotalvolume : 0;
+    const topTotalVolume = topChartData.length > 0 ? topChartData[0].askstotalvolume : 0;
+    const bottomTotalVolume = bottomChartData.length > 0 ? bottomChartData[bottomChartData.length - 1].bidstotalvolume : 0;
 
     const highestVolume = topTotalVolume > bottomTotalVolume ? topTotalVolume : bottomTotalVolume;
 
@@ -219,35 +208,31 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     let midMarketPrice;
 
-    if(rightChartData.length === 0 && leftChartData.length === 0) {
+    if(topChartData.length === 0 && bottomChartData.length === 0) {
       midMarketPrice = 0;
-    } else if(rightChartData.length > 0 && leftChartData.length > 0) {
-      midMarketPrice = math.divide(bignumber(rightChartData[rightChartData.length - 1].value + leftChartData[0].value), 2);
-    } else if(rightChartData.length > 0) {
-      midMarketPrice = rightChartData[0].value;
+    } else if(topChartData.length > 0 && bottomChartData.length > 0) {
+      midMarketPrice = math.divide(bignumber(topChartData[topChartData.length - 1].value + bottomChartData[0].value), 2);
+    } else if(topChartData.length > 0) {
+      midMarketPrice = topChartData[0].value;
     } else {
-      midMarketPrice = leftChartData[leftChartData.length - 1].value;
+      midMarketPrice = bottomChartData[bottomChartData.length - 1].value;
     }
 
-    this.zone.run(() => {
-      this.midMarketPrice = DepthComponent.formatMMP(midMarketPrice);
-    });
+    this.midMarketPrice = DepthComponent.formatMMP(midMarketPrice);
 
-    if (this.rightChart) {
+    if (this.topChart) {
       // set a uniform x axis maximum value so the charts match
-      // this.rightChart.categoryAxis.maximum = volumeAxisMax;
-      this.rightChart.valueAxes[0].maximum = volumeAxisMax;
+      this.topChart.valueAxes[0].maximum = volumeAxisMax;
       // update the chart dataset
-      this.rightChart.dataProvider = [...rightChartData].reverse();
-      this.rightChart.validateData();
+      this.topChart.dataProvider = topChartData;
+      this.topChart.validateData();
     }
-    if (this.leftChart) {
+    if (this.bottomChart) {
       // set a uniform x axis maximum value so the charts match
-      // this.leftChart.categoryAxis.maximum = volumeAxisMax;
-      this.leftChart.valueAxes[0].maximum = volumeAxisMax;
+      this.bottomChart.valueAxes[0].maximum = volumeAxisMax;
       // update the chart dataset
-      this.leftChart.dataProvider = [...leftChartData].reverse();
-      this.leftChart.validateData();
+      this.bottomChart.dataProvider = bottomChartData;
+      this.bottomChart.validateData();
     }
   }
 
@@ -288,18 +273,18 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
       // }, 0);
 
       // Top chart
-      if (this.rightChart)
-        this.rightChart.clear();
+      if (this.topChart)
+        this.topChart.clear();
 
-      this.rightChart = AmCharts.makeChart(this.rightChartContainer.nativeElement, {
+      this.topChart = AmCharts.makeChart(this.topChartContainer.nativeElement, {
         language: Localize.locale(),
         numberFormatter: {
           decimalSeparator: Localize.decimalSeparator(),
           thousandsSeparator: Localize.groupingSeparator()
         },
-        // 'responsive': {
-        //   'enabled': true
-        // },
+        'responsive': {
+          'enabled': true
+        },
         'type': 'serial',
         'theme': 'dark',
         'dataProvider': [],
@@ -311,14 +296,15 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
             'lineThickness': 1,
             'lineColor': '#FF7E70',
             fillColors: [
-              '#FF7E70',
-              '#172E48'
+              '#172E48',
+              '#FF7E70'
             ],
             'type': 'step',
             'valueField': 'askstotalvolume',
             'balloonFunction': balloon
           },
         ],
+        'categoryField': 'valueStr',
         'chartCursor': {},
         'balloon': {
           'textAlign': 'left',
@@ -335,11 +321,11 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
           {
             showFirstLabel: false,
             showLastLabel: false,
-            'inside': true,
-            'minimum': 0,
+            inside: true,
             gridAlpha: 0,
+            position: top,
             axisAlpha: 0,
-            color: 'rgba(0, 0, 0, 0)'
+            color: 'rgba(0, 0, 0, 0)',
 
             // The following two properties are for if we want to force a certain number of axis labels.
             // Changing these values leads to unpredictable behavior and is not recommended without further testing.
@@ -347,16 +333,13 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
             // gridCount: 3
           }
         ],
-        'categoryField': 'valueStr',
         'categoryAxis': {
           'gridAlpha': 0,
           'minVerticalGap': 100,
           'startOnAxis': true,
           'showFirstLabel': false,
           'showLastLabel': false,
-          'inside': false,
-          autoGridCount: true,
-          minHorizontalGap: 100,
+          'inside': true,
           'balloon': {
             'fontSize': 0,
             'color': '#FFFFFF'
@@ -369,6 +352,7 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
           // gridCount: 4
         },
         'mouseWheelZoomEnabled': true,
+        'rotate': true,
         'export': {
           'enabled': false
         },
@@ -392,17 +376,18 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
       });
 
       // Bottom Chart
-      if (this.leftChart)
-        this.leftChart.clear();
-      this.leftChart = AmCharts.makeChart(this.leftChartContainer.nativeElement, {
+      if (this.bottomChart)
+        this.bottomChart.clear();
+
+      this.bottomChart = AmCharts.makeChart(this.bottomChartContainer.nativeElement, {
         language: Localize.locale(),
         numberFormatter: {
           decimalSeparator: Localize.decimalSeparator(),
           thousandsSeparator: Localize.groupingSeparator()
         },
-        // 'responsive': {
-        //   'enabled': true
-        // },
+        'responsive': {
+          'enabled': true
+        },
         'type': 'serial',
         'theme': 'dark',
         'dataProvider': [],
@@ -422,6 +407,7 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
             'balloonFunction': balloon
           }
         ],
+        'categoryField': 'valueStr',
         'chartCursor': {},
         'balloon': {
           'textAlign': 'left',
@@ -440,7 +426,7 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
             'showLastLabel': false,
             'inside': true,
             'gridAlpha': 0,
-            'minimum': 0
+            position: 'bottom',
 
             // The following two properties are for if we want to force a certain number of axis labels.
             // Changing these values leads to unpredictable behavior and is not recommended without further testing.
@@ -448,16 +434,13 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
             // gridCount: 3
           }
         ],
-        'categoryField': 'valueStr',
         'categoryAxis': {
           'gridAlpha': 0,
           'minVerticalGap': 100,
           'startOnAxis': true,
           'showFirstLabel': false,
           'showLastLabel': false,
-          'inside': false,
-          autoGridCount: true,
-          minHorizontalGap: 100,
+          'inside': true,
           'balloon': {
             'fontSize': 0,
             'color': '#FFFFFF'
@@ -470,7 +453,7 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
           // gridCount: 4
         },
         'mouseWheelZoomEnabled': true,
-        // 'rotate': true,
+        'rotate': true,
         'export': {
           'enabled': false
         },
@@ -501,6 +484,195 @@ export class DepthComponent implements AfterViewInit, OnChanges, OnDestroy {
       // console.log(this.chart);
 
     });
+
+    // this.zone.runOutsideAngular(() => {
+    //   this.chart = AmCharts.makeChart('chartdiv', {
+    //     'responsive': {
+    //       'enabled': true
+    //     },
+    //     'type': 'serial',
+    //     'theme': 'dark',
+    //     'dataLoader': {
+    //       'url': '/assets/api/orderbook' + this.symbols.join('_') + '.json',
+    //       'format': 'json',
+    //       'reload': 3000000000,
+    //       'postProcess': function(data) {
+    //
+    //         // Function to process (sort and calculate cummulative volume)
+    //         function processData(list, type, desc) {
+    //
+    //           // Convert to data points
+    //           for(var i = 0; i < list.length; i++) {
+    //             list[i] = {
+    //               value: Number(list[i][0]),
+    //               volume: Number(list[i][1]),
+    //             }
+    //           }
+    //
+    //           // Sort list just in case
+    //           list.sort(function(a, b) {
+    //             if (a.value > b.value) {
+    //               return 1;
+    //             }
+    //             else if (a.value < b.value) {
+    //               return -1;
+    //             }
+    //             else {
+    //               return 0;
+    //             }
+    //           });
+    //
+    //           // Calculate cummulative volume
+    //           if (desc) {
+    //             for(var i = list.length - 1; i >= 0; i--) {
+    //               if (i < (list.length - 1)) {
+    //                 list[i].totalvolume = list[i+1].totalvolume + list[i].volume;
+    //               }
+    //               else {
+    //                 list[i].totalvolume = list[i].volume;
+    //               }
+    //               var dp = {};
+    //               dp['value'] = list[i].value;
+    //               dp[type + 'volume'] = list[i].volume;
+    //               dp[type + 'totalvolume'] = list[i].totalvolume;
+    //               res.unshift(dp);
+    //             }
+    //           }
+    //           else {
+    //             for(var i = 0; i < list.length; i++) {
+    //               if (i > 0) {
+    //                 list[i].totalvolume = list[i-1].totalvolume + list[i].volume;
+    //               }
+    //               else {
+    //                 list[i].totalvolume = list[i].volume;
+    //               }
+    //               var dp = {};
+    //               dp['value'] = list[i].value;
+    //               dp[type + 'volume'] = list[i].volume;
+    //               dp[type + 'totalvolume'] = list[i].totalvolume;
+    //               res.push(dp);
+    //             }
+    //           }
+    //
+    //         }
+    //
+    //         // Init
+    //         var res = [];
+    //         processData(data.bids, 'bids', true);
+    //         processData(data.asks, 'asks', false);
+    //
+    //         //console.log(res);
+    //         return res;
+    //       }
+    //     },
+    //     'graphs': [{
+    //       'id': 'bids',
+    //       'fillAlphas': 0.1,
+    //       'lineAlpha': 1,
+    //       'lineThickness': 2,
+    //       'lineColor': '#4BF5C6',
+    //       'type': 'step',
+    //       'valueField': 'bidstotalvolume',
+    //       'balloonFunction': balloon
+    //     }, {
+    //       'id': 'asks',
+    //       'fillAlphas': 0.1,
+    //       'lineAlpha': 1,
+    //       'lineThickness': 2,
+    //       'lineColor': '#FF7E70',
+    //       'type': 'step',
+    //       'valueField': 'askstotalvolume',
+    //       'balloonFunction': balloon
+    //     },
+    //      {
+    //       'lineAlpha': 0,
+    //       'fillAlphas': 0.2,
+    //       'lineColor': '#FFF',
+    //       'type': 'column',
+    //       'clustered': false,
+    //       'valueField': 'bidsvolume',
+    //       'showBalloon': false
+    //     }, {
+    //       'lineAlpha': 0,
+    //       'fillAlphas': 0.2,
+    //       'lineColor': '#FFF',
+    //       'type': 'column',
+    //       'clustered': false,
+    //       'valueField': 'asksvolume',
+    //       'showBalloon': false
+    //     }
+    //   ],
+    //     'categoryField': 'value',
+    //     'chartCursor': {},
+    //     'balloon': {
+    //       'textAlign': 'left',
+    //       'disableMouseEvents': true,
+    //       'fixedPosition': false,
+    //       'fillAlpha': 1
+    //     },
+    //     'valueAxes': [{
+    //       'showFirstLabel': false,
+    //       'showLastLabel': false,
+    //       'inside': true,
+    //       'gridAlpha': 0
+    //     }],
+    //     'categoryAxis': {
+    //       'gridAlpha': 0,
+    //       'minVerticalGap': 100,
+    //       'startOnAxis': true,
+    //       'showFirstLabel': false,
+    //       'showLastLabel': false,
+    //       'inside': true,
+    //       'balloon': {
+    //         'fontSize': 0,
+    //         'color': '#FFFFFF'
+    //         // 'enabled' : false  // TODO: This isn't working for some reason.
+    //       }
+    //     },
+    //     'mouseWheelZoomEnabled': true,
+    //     'rotate': true,
+    //     'export': {
+    //       'enabled': false
+    //     },
+    //     'listeners': [{
+    //       'event': 'rendered',
+    //       'method': function(event) {
+    //         // var chart = event.chart;
+    //         // var chartCursor = new AmCharts.ChartCursor();
+    //         // chart.addChartCursor(chartCursor);
+    //         // chartCursor.enabled=false;
+    //       }
+    //     }]
+    //   });
+    //
+    //   // console.log(this.chart);
+    //
+    //   function balloon(item, graph) {
+    //     var txt;
+    //     if (graph.id == 'asks') {
+    //       txt = 'Ask: <strong>' + formatNumber(item.dataContext.value, graph.chart, 4) + '</strong><br />'
+    //         + 'Volume: <strong>' + formatNumber(item.dataContext.askstotalvolume, graph.chart, 4) + '</strong><br />'
+    //         + 'Sum: <strong>' + formatNumber(item.dataContext.asksvolume, graph.chart, 4) + '</strong>';
+    //     }
+    //     else {
+    //       txt = 'Bid: <strong>' + formatNumber(item.dataContext.value, graph.chart, 4) + '</strong><br />'
+    //         + 'Volume: <strong>' + formatNumber(item.dataContext.bidstotalvolume, graph.chart, 4) + '</strong><br />'
+    //         + 'Sum: <strong>' + formatNumber(item.dataContext.bidsvolume, graph.chart, 4) + '</strong>';
+    //     }
+    //     return txt;
+    //   }
+    //
+    //   function formatNumber(val, chart, precision) {
+    //     return AmCharts.formatNumber(
+    //       val,
+    //       {
+    //         precision: precision ? precision : chart.precision,
+    //         decimalSeparator: chart.decimalSeparator,
+    //         thousandsSeparator: chart.thousandsSeparator
+    //       }
+    //     );
+    //   }
+    // });
 
   }
 
